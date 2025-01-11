@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Editor</title>
+    <link href="https://site-assets.fontawesome.com/releases/v6.0.0/css/all.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            user-select: none;
+            /* Disable text selection */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+        }
+
+        img {
+            pointer-events: none;
+            /* Disable image dragging */
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    <style>
+        .updBtn button {
+            width: 70px;
+            background: black;
+            color: white;
+            border-radius: 12px;
+            padding: 3px;
+            cursor: pointer;
+        }
+
+        .container h2 {
+            margin-top: -8px;
+            font-weight: 700;
+        }
+
+        .container .wrapper {
+            display: flex;
+            margin: 20px 0;
+            min-height: 335px;
+        }
+
+        .wrapper .editor-panel {
+            padding: 15px 20px;
+            width: 100%;
+            border-radius: 5px;
+            background: #a9a9a9ba;
+            border: 1px solid #e60808;
+            height: 600px;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .wrapper .editor-panel-lyrs {
+            padding: 15px 20px;
+            width: 200px;
+            border-radius: 5px;
+            background: #fbf6f6ba;
+            border: 1px solid #e60808;
+            height: 600px;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .wrapper .editor-panel-lyrs #layerSelect .layer-box {
+            width: 100%;
+            height: 100px;
+            background: #dadadaa3;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .editor-panel-lyrs #layerSelect .layer-box img {
+            width: 100px;
+            height: 90px;
+        }
+
+        /* Selected layer style */
+        .selected-layer {
+            border: 1px solid #ff0000 !important;
+        }
+
+        .wrapper .editor-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .editor-panel .title {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .editor-panel .options,
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .editor-panel button {
+            outline: none;
+            width: 100px;
+            height: 40px;
+            font-size: 14px;
+            color: #6c757d;
+            background: #fff;
+            border-radius: 3px;
+            border: 1px solid #af0808;
+        }
+
+        .wrtBtn button {
+            outline: none;
+            height: 40px;
+            width: 25%;
+            font-size: 14px;
+            color: #6c757d;
+            background: #fff;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            border: 1px solid #af0808;
+        }
+
+        .editor-panel .filter button {
+            /* width: calc(100% / 2 - 4px); */
+        }
+
+        .editor-panel button:hover {
+            background: #f5f5f5;
+        }
+
+        .filter button.active {
+            color: #fff;
+            border-color: #5372f0;
+            background: #5372f0;
+        }
+
+        .filter .slider {
+            margin-top: 12px;
+        }
+
+        .filter .slider .filter-info {
+            display: flex;
+            /* color: #464646; */
+            font-size: 14px;
+            justify-content: space-between;
+        }
+
+        .filter .slider input {
+            width: 100%;
+            height: 5px;
+            accent-color: #5372f0;
+        }
+
+        .editor-panel .rotate {
+            margin-top: 17px;
+        }
+
+        .editor-panel .rotate button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: calc(100% / 4 - 3px);
+        }
+
+        .rotate .options button:nth-child(3),
+        .rotate .options button:nth-child(4) {
+            font-size: 18px;
+        }
+
+        .rotate .options button:active {
+            color: #fff;
+            background: #5372f0;
+            border-color: #5372f0;
+        }
+
+        .wrapper .preview-img {
+            flex-grow: 1;
+            display: flex;
+            overflow: hidden;
+            margin-left: 20px;
+            border-radius: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-img img {
+            max-width: 490px;
+            max-height: 335px;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .controls button {
+            padding: 11px 20px;
+            font-size: 14px;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+            cursor: pointer;
+            background: none;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .controls .reset-filter {
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        .controls .reset-filter:hover {
+            color: #fff;
+            background: #6c757d;
+        }
+
+        .controls .choose-img {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        .controls .choose-bg {
+            background: #21649e;
+            border: 1px solid #6c757d;
+        }
+
+        .controls .save-img {
+            margin-left: 5px;
+            background: #25be32;
+            border: 1px solid #5372f0;
+        }
+
+        .filter input {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100px;
+            height: 40px;
+            text-align: center;
+        }
+
+        .filter input[type="number"] {
+            border: 1px solid #af0808;
+        }
+
+        .filter select {
+            border: none;
+            background: #fff;
+            border: 1px solid #af0808;
+            cursor: pointer;
+            width: 100px;
+            height: 40px;
+        }
+
+        .filter p {
+            font-size: 12px;
+        }
+
+        .slapCont {
+            padding: 20px;
+            border: 1px solid #cec6c6;
+        }
+
+
+        @media screen and (max-width: 760px) {
+            .container {
+                padding: 25px;
+            }
+
+            .container .wrapper {
+                flex-wrap: wrap-reverse;
+            }
+
+            .wrapper .editor-panel {
+                width: 100%;
+            }
+
+            .wrapper .preview-img {
+                width: 100%;
+                margin: 0 0 15px;
+            }
+        }
+
+        @media screen and (max-width: 500px) {
+            .controls button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .controls .row {
+                width: 100%;
+            }
+
+            .controls .row .save-img {
+                margin-left: 0px;
+            }
+        }
+
+        .ptrnsBtnSv button {
+            font-size: 12px;
+            width: 215px;
+        }
+
+        .ptrnsBtn {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .ptrnsBtn .col-md-1 {
+            flex: 0 0 auto;
+        }
+
+        .ptrnsBtn::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ptrnsBtn button {
+            font-size: 12px;
+            width: 100px;
+        }
+
+        .ptrnsBtn button img {
+            width: 60px;
+        }
+
+        .ptrnsBtn button:hover {
+            color: white !important;
+            transition: ease-in-out;
+        }
+    </style>
+    <section class="materail1">
+        <div class="container-fluid slapCont" id="expandableDiv">
+            <div class="row text-center">
+                <div class="col-md-6 mx-auto">
+                    <h2>Canvas Editor</h2>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row wrapper">
+                        <div class="col-md-3">
+                            <div class="editor-panel">
+                                <div class="dirBtn d-flex align-items-center justify-content-between mb-3">
+                                    <button class="btn w-25" id="setHorizontal"><i
+                                            class="fa-solid fa-ruler-horizontal"></i></button>
+                                    <button class="btn w-25" id="setFullScrn"><i
+                                            class="fa-solid fa-square-full"></i></button>
+                                    <button class="btn w-25" id="setVertical"><i
+                                            class="fa-solid fa-ruler-vertical"></i></button>
+                                </div>
+                                <div class="filter">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <button id="addTextButton"><i class="fa fa-font text-dark"></i></button>
+                                        <input type="color" id="textColorPicker" value="#ff0000">
+                                        <button id="selectObj"><i class="fa fa-hand text-info"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Text</p>
+                                        </div>
+                                        <div>
+                                            <p>Text Color</p>
+                                        </div>
+                                        <div>
+                                            <p>Select</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="wrtBtn d-flex align-items-center justify-content-between">
+                                        <button id="enableBrush"><i class="fa fa-pencil text-primary"></i></button>
+                                        <button id="enableEraser"><i class="fa fa-eraser text-dark"></i></button>
+                                        <button id="disableBrush"><i class="fa fa-ban text-danger"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Write</p>
+                                        </div>
+                                        <div>
+                                            <p>Erase</p>
+                                        </div>
+                                        <div>
+                                            <p>Disable</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <input type="color" id="brushColor" value="#ff0000">
+                                        <button id="enableRainbowBrush"><i
+                                                class="fa-solid fa-rainbow text-danger"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Brush color</p>
+                                        </div>
+                                        <div>
+                                            <p>Rainbow Brush</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <input type="range" id="brushSize" min="1" max="50" value="10">
+                                        <input type="range" id="brushOpacity" min="0" max="1" step="0.1" value="1">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Brush size</p>
+                                        </div>
+                                        <div>
+                                            <p>Opacity</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <button id="paintBrushButton"><i
+                                                class="fa-solid fa-spray-can-sparkles text-warning"></i></button>
+                                        <input type="color" id="brushColorPicker" value="#000000">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Spray</p>
+                                        </div>
+                                        <div>
+                                            <p>Spray Color</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <input type="color" id="textShadowColor" value="#000000">
+                                        <input type="number" id="textShadowBlur" value="5">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Shadow Color</p>
+                                        </div>
+                                        <div>
+                                            <p>Shadow Blur</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <input type="number" id="textShadowOffsetX" value="5">
+                                        <input type="number" id="textShadowOffsetY" value="5">
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Offset X</p>
+                                        </div>
+                                        <div>
+                                            <p>Offset Y</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <input type="number" id="fontSize" value="40" min="10" max="100" step="1">
+                                        <select id="addFontFamily" class="form-control"
+                                            onchange="changeFontFamily(this.value)">
+                                            <option value="">Font Style</option>
+                                            <option value="Arial, sans-serif">Arial</option>
+                                            <option value="'Times New Roman', serif">Times New Roman</option>
+                                            <option value="'Courier New', monospace">Courier New</option>
+                                            <option value="Georgia, serif">Georgia</option>
+                                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                            <option value="'Comic Sans MS', cursive">Comic Sans</option>
+                                            <option value="'Lucida Sans', sans-serif">Lucida Sans</option>
+                                            <option value="'Verdana', sans-serif">Verdana</option>
+                                            <option value="'Roboto', sans-serif">Roboto</option>
+                                            <option value="'Open Sans', sans-serif">Open Sans</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Font size</p>
+                                        </div>
+                                        <div>
+                                            <p>Font style</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter">
+                                    <div class="filter">
+                                        <!-- Opacity -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="opacityRange" min="0" max="1" step="0.1" value="1">
+                                            <input type="range" id="brightness" min="-1" max="1" step="0.01" value="0">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Change Opacity:</p>
+                                            </div>
+                                            <div>
+                                                <p>Brightness:</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Contrast -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="contrast" min="-1" max="1" step="0.01" value="0">
+                                            <input type="range" id="saturation" min="-1" max="1" step="0.01" value="0">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Contrast:</p>
+                                            </div>
+                                            <div>
+                                                <p>Saturation:</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Hue -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="hue" min="-1" max="1" step="0.01" value="0">
+                                            <input type="range" id="vibrance" min="-1" max="1" step="0.01" value="0">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Hue:</p>
+                                            </div>
+                                            <div>
+                                                <p>Vibrance:</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Noise and Pixelate -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="noise" min="0" max="1000" step="1" value="0">
+                                            <input type="range" id="pixelate" min="1" max="20" step="1" value="1">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Noise:</p>
+                                            </div>
+                                            <div>
+                                                <p>Pixelate:</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Blur -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="blur" min="0" max="1" step="0.01" value="0">
+                                            <input type="range" id="sharpen" min="0" max="1" step="0.01" value="0">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Blur:</p>
+                                            </div>
+                                            <div>
+                                                <p>Sharpen:</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Additional Filters -->
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="emboss" min="0" max="1" step="0.01" value="0">
+                                            <input type="range" id="gammaRed" min="0" max="3" step="0.1" value="1">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Emboss:</p>
+                                            </div>
+                                            <div>
+                                                <p>Gamma (Red):</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <input type="range" id="gammaGreen" min="0" max="3" step="0.1" value="1">
+                                            <input type="range" id="gammaBlue" min="0" max="3" step="0.1" value="1">
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p>Gamma (Green):</p>
+                                            </div>
+                                            <div>
+                                                <p>Gamma (Blue):</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="filter-controls">
+                                    <div class="filter">
+                                        <p>Image Filter:</p>
+                                    </div>
+                                    <select id="filter-select" class="form-control" disabled>
+                                        <option value="">-- None --</option>
+                                        <option value="grayscale">Grayscale</option>
+                                        <option value="invert">Invert</option>
+                                        <option value="remove-color">Remove Color</option>
+                                        <option value="sepia">Sepia</option>
+                                        <option value="brownie">Brownie</option>
+                                        <option value="vintage">Vintage</option>
+                                        <option value="technicolor">Technicolor</option>
+                                        <option value="polaroid">Polaroid</option>
+                                        <option value="kodachrome">Kodachrome</option>
+                                        <option value="blackwhite">Black & White</option>
+                                        <option value="blend-image">Blend Image</option>
+                                    </select>
+                                </div>
+                                <div class="rotate filter">
+                                    <div class="options">
+                                        <button id="left"><i class="fa-solid fa-rotate-left"></i></button>
+                                        <button id="invertButton"> >|< </button>
+                                                <button id="invertColor"><span class="text-danger">
+                                                        < </span> | <span class="text-primary">></span></button>
+                                                <button id="right"><i class="fa-solid fa-rotate-right"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Left</p>
+                                        </div>
+                                        <div>
+                                            <p>Flip Img</p>
+                                        </div>
+                                        <div>
+                                            <p>Flip Color</p>
+                                        </div>
+                                        <div>
+                                            <p>Right</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="rotate filter">
+                                    <div class="options">
+                                        <button id="undoButton"><i class="fa fa-undo"></i></button>
+                                        <input type="color" id="canvasBgColor" accept="png">
+                                        <button onclick="clearCanvas();"><i class="fa fa-tv"></i></button>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p>Ctrl+z</p>
+                                        </div>
+                                        <div>
+                                            <p>Canvas BG</p>
+                                        </div>
+                                        <div>
+                                            <p>Clear</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="preview-img">
+                                <canvas id="myCanvas" style="width:100%; height:600px; border: 1px solid red;"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="editor-panel-lyrs">
+                                <div class="d-flex align-items-center justify-content-between updBtn">
+                                    <button id="moveDown" disabled>Down</button>
+                                    <button id="moveUp" disabled>Up</button>
+                                </div>
+                                <hr>
+                                <div class="filter">
+                                    <div id="layerSelect">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="controls">
+                    <button class="chooseImg btn btn-info text-dark" data-bs-toggle="modal"
+                        data-bs-target="#slctImgs">Choose Img</button>
+                    <input type="file" class="file-input" accept="image/png" hidden>
+                    <button class="choose-img btn-primary">Choose Image</button>
+                    <input type="file" class="back-file-input" accept="image/png" hidden>
+                    <button class="choose-bg btn-primary">Background Image</button>
+                    <button class="bg-success text-white btn btn-success" data-bs-toggle="modal"
+                        data-bs-target="#saveImg">Save
+                        Image</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Modal -->
+    <div class="modal fade" id="saveImg" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Image Size</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="formSec">
+                        <div class="form-group">
+                            <label for="imgWidth">Width:</label>
+                            <input type="number" class="form-control" id="imgWidth" value="800">
+                        </div>
+                        <div class="form-group">
+                            <label for="imgHeight">Height:</label>
+                            <input type="number" id="imgHeight" class="form-control" value="600">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success save-img">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .modal-dialog {
+            max-width: 1000px;
+        }
+
+        .modal-content {
+            padding: 10px;
+        }
+
+        .scrollable-modal-body {
+            max-height: 440px;
+            overflow-y: auto;
+        }
+    </style>
+    <!-- Imgs Modal -->
+    <div class="modal fade" id="slctImgs" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title p-0 fw-bold" id="staticBackdropLabel">Select Image</h5>
+                    <i class="btn-close fa fa-X text-white" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></i>
+                </div>
+                <div class="modal-body scrollable-modal-body">
+                    <div class="row" style="cursor: pointer;">
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://w7.pngwing.com/pngs/212/521/png-transparent-long-sleeved-t-shirt-sticker-stickers-text-fashion-unisex.png"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://w7.pngwing.com/pngs/212/521/png-transparent-long-sleeved-t-shirt-sticker-stickers-text-fashion-unisex.png">
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://i.pinimg.com/736x/48/73/50/4873506f8dd314ddce7261f5239a3d70.jpg"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://i.pinimg.com/736x/48/73/50/4873506f8dd314ddce7261f5239a3d70.jpg">
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://pnghq.com/wp-content/uploads/pnghq.com-skull-sticker-transparent-png.png"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://pnghq.com/wp-content/uploads/pnghq.com-skull-sticker-transparent-png.png">
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://images.vexels.com/content/158488/preview/cool-sticker-2da0b4.png"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://images.vexels.com/content/158488/preview/cool-sticker-2da0b4.png">
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://i.pinimg.com/564x/a5/67/7b/a5677bb4bf1eebc03eaf93c9178e3f66.jpg"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://i.pinimg.com/564x/a5/67/7b/a5677bb4bf1eebc03eaf93c9178e3f66.jpg">
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="imgBx1">
+                                <img src="https://ih1.redbubble.net/image.550298912.0681/st,small,507x507-pad,600x600,f8f8f8.u3.jpg"
+                                    class="img-fluid canvas-img" alt=""
+                                    data-img-src="https://ih1.redbubble.net/image.550298912.0681/st,small,507x507-pad,600x600,f8f8f8.u3.jpg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div>
+                        <button type="button" class="btn btn-primary" id="selectImageButton"
+                            data-bs-dismiss="modal">Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+    <script src="https://unpkg.com/fabric@5.2.4/dist/eraser_brush.mixin.js"></script>
+    <script>
+        // Initialize Fabric.js canvas
+        var canvas = new fabric.Canvas('myCanvas');
+        canvas.setHeight(600);
+
+
+        // Listen for the selection:created event
+        canvas.on('selection:created', function (event) {
+            // First, ensure an object is selected
+            const selectedObject = event.target; // The selected object
+            if (selectedObject) {
+                console.log('Object selected:', selectedObject);
+                // Deselect the previously selected object, if any
+                if (canvas.getActiveObject()) {
+                    canvas.discardActiveObject();
+                }
+                // Optionally set this new object as active (Fabric does it automatically)
+                canvas.setActiveObject(selectedObject);
+                canvas.renderAll();
+            } else {
+                console.warn('No object selected');
+            }
+        });
+        // Optional: Handle when selection is cleared (no object is selected)
+        canvas.on('selection:cleared', function () {
+            console.log('No object selected');
+        });
+
+        // Function to set canvas to vertical orientation
+        document.getElementById('setFullScrn').addEventListener('click', function () {
+            canvas.setWidth(690); // Set a narrower width
+            canvas.setHeight(600); // Keep the height larger for vertical orientation
+            canvas.renderAll();
+        });
+        // Function to set canvas to vertical orientation
+        document.getElementById('setVertical').addEventListener('click', function () {
+            canvas.setWidth(400); // Set a narrower width
+            canvas.setHeight(600); // Keep the height larger for vertical orientation
+            canvas.renderAll();
+        });
+        // Function to set canvas to horizontal orientation
+        document.getElementById('setHorizontal').addEventListener('click', function () {
+            canvas.setWidth(600); // Set a wider width
+            canvas.setHeight(400); // Set a smaller height for horizontal orientation
+            canvas.renderAll();
+        });
+        // Function to add text to the canvas
+        function AddText() {
+            var text = new fabric.IText("Type here..", {
+                left: canvas.getWidth() / 2,
+                top: canvas.getHeight() / 2,
+                fill: 'black',
+                fontSize: 40,
+                originX: 'center',
+                originY: 'center',
+                shadow: {
+                    color: '#000000',
+                    blur: 5,
+                    offsetX: 5,
+                    offsetY: 5,
+                    opacity: 0.5
+                }
+            });
+            text.setControlsVisibility({
+                mt: false, // disable top middle control
+                mb: false, // disable bottom middle control
+            });
+            canvas.add(text);
+            canvas.setActiveObject(text);
+            text.enterEditing(); // Enable text editing
+            canvas.renderAll();
+            updateLayerBoxes();
+        }
+        document.getElementById('addTextButton').addEventListener('click', function () {
+            AddText();
+        });
+        // Change text color
+        document.getElementById('textColorPicker').addEventListener('input', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                activeObject.set('fill', this.value);
+                canvas.renderAll();
+            }
+        });
+        // Add an event listener to update opacity when the range slider changes
+        document.getElementById('opacityRange').addEventListener('input', function () {
+            var selectedObject = canvas.getActiveObject();
+            var opacityValue = this.value;
+            if (selectedObject) {
+                selectedObject.set('opacity', opacityValue);
+                canvas.renderAll();
+            } else {
+                alert('Please select an object to change opacity.');
+            }
+        });
+        // Set the width to 100% of the parent container
+        var canvasContainer = document.querySelector('.preview-img');
+        canvas.setWidth(canvasContainer.clientWidth);
+        canvas.setBackgroundColor('#d6d6d6a8');
+        var brush = new fabric.PencilBrush(canvas);
+        brush.color = 'black'; // Default brush color
+        brush.width = 10; // Default brush width
+        var canvasStates = [];
+        var currentStateIndex = -1;
+        // Change canvas background color
+        document.getElementById('canvasBgColor').addEventListener('input', function () {
+            canvas.setBackgroundColor(this.value, canvas.renderAll.bind(canvas));
+        });
+        var _clipboard;
+        var undoStack = [];
+        // Save current canvas state to undo stack
+        function saveState() {
+            var json = canvas.toJSON();
+            undoStack.push(json);
+        }
+        // Function to copy the active object
+        function Copy() {
+            canvas.getActiveObject().clone(function (cloned) {
+                _clipboard = cloned;
+            });
+        }
+        // Function to paste the copied object
+        function Paste() {
+            if (!_clipboard) return; // Ensure there's something to paste
+            _clipboard.clone(function (clonedObj) {
+                canvas.discardActiveObject();
+                clonedObj.set({
+                    left: clonedObj.left + 10,
+                    top: clonedObj.top + 10,
+                    evented: true,
+                });
+                if (clonedObj.type === 'activeSelection') {
+                    clonedObj.canvas = canvas;
+                    clonedObj.forEachObject(function (obj) {
+                        canvas.add(obj);
+                    });
+                    clonedObj.setCoords();
+                } else {
+                    canvas.add(clonedObj);
+                }
+                _clipboard.top += 10;
+                _clipboard.left += 10;
+                canvas.setActiveObject(clonedObj);
+                canvas.requestRenderAll();
+            });
+        }
+        // Event listener for keydown event
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'c') {
+                Copy();
+            }
+            if (e.ctrlKey && e.key === 'v') {
+                Paste();
+            }
+        });
+
+        function attachImageClickEvent() {
+            document.querySelectorAll('.canvas-img').forEach(function (img) {
+                img.addEventListener('click', function () {
+                    document.querySelectorAll('.canvas-img').forEach(function (image) {
+                        image.style.border = 'none'; // Remove border from all images
+                    });
+                    img.style.border = '2px solid red'; // Highlight selected image with red border
+                    selectedImgSrc = img.getAttribute('data-img-src'); // Store selected image source
+                });
+            });
+        }
+
+        // Declare selectedImgSrc in the global scope
+        let selectedImgSrc = null;
+
+        function attachImageClickEvent() {
+            // Ensure the selected image is stored when an image is clicked
+            document.querySelectorAll('.canvas-img').forEach(function (img) {
+                img.addEventListener('click', function () {
+                    document.querySelectorAll('.canvas-img').forEach(function (image) {
+                        image.style.border = 'none'; // Remove border from all images
+                    });
+                    img.style.border = '2px solid red'; // Highlight selected image with red border
+                    selectedImgSrc = img.getAttribute('data-img-src'); // Store selected image source
+                });
+            });
+        }
+
+        // Button to load the selected image onto the canvas
+        document.getElementById('selectImageButton').addEventListener('click', function () {
+            if (selectedImgSrc) {
+                loadImageOntoCanvas(selectedImgSrc); // Load selected image onto the canvas
+                clearModalData(); // Clear modal data after loading the image
+            } else {
+                console.log('No image selected');
+            }
+        });
+
+        // Function to load the selected image onto the Fabric.js canvas
+        function loadImageOntoCanvas(imgSrc) {
+            fabric.Image.fromURL(imgSrc, function (oImg) {
+                const maxTextureSize = 8192; // Set the maximum texture size
+                let width = oImg.width;
+                let height = oImg.height;
+                // If the image is larger than the max texture size, scale it down proportionally
+                if (width > maxTextureSize || height > maxTextureSize) {
+                    const scalingFactor = Math.min(maxTextureSize / width, maxTextureSize / height);
+                    oImg.scale(scalingFactor);
+                }
+                // Set the image width and height, scaled proportionally
+                oImg.scaleToWidth(400); // Adjust this size to your desired canvas size
+                oImg.scaleToHeight(400); // Adjust this size to your desired canvas size
+                // Center the image on the canvas
+                oImg.set({
+                    left: canvas.getWidth() / 2 - oImg.getScaledWidth() / 2,
+                    top: canvas.getHeight() / 2 - oImg.getScaledHeight() / 2
+                });
+                // Add the image to the canvas and set it as the active object
+                canvas.add(oImg);
+                canvas.setActiveObject(oImg);
+                activeImgObj = oImg;
+                // Render the canvas
+                canvas.renderAll();
+                updateLayerBoxes();
+            });
+        }
+
+        // Function to clear the modal data and reset the selected image
+        function clearModalData() {
+            $('#partialImgs .mainBody').html(''); // Clear the content in the modal
+            $('#spinner').attr('hidden', ''); // Hide the spinner if it's visible
+            selectedImgSrc = null; // Reset the selected image source
+        }
+
+
+        // Rainbow Brush
+        var RainbowBrush = fabric.util.createClass(fabric.PencilBrush, {
+            initialize: function (canvas) {
+                this.canvas = canvas;
+                this.points = [];
+                this.width = 10; // Default brush size
+                this.opacity = 1; // Default opacity
+            },
+            onMouseDown: function (pointer) {
+                this.points.length = 0;
+                this.canvas.contextTop.moveTo(pointer.x, pointer.y);
+                this.points.push(pointer);
+                this._reset();
+            },
+            onMouseMove: function (pointer) {
+                this.points.push(pointer);
+                this._render();
+            },
+            onMouseUp: function () {
+                this._finalizeAndAddPath();
+            },
+            _render: function () {
+                if (this.points.length < 2) {
+                    return;
+                }
+                var ctx = this.canvas.contextTop;
+                ctx.lineWidth = this.width;
+                ctx.lineCap = this.strokeLineCap;
+                ctx.lineJoin = this.strokeLineJoin;
+                var gradient = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+                gradient.addColorStop(0, `rgba(255, 0, 0, ${this.opacity})`); // Red
+                gradient.addColorStop(1 / 6, `rgba(255, 165, 0, ${this.opacity})`); // Orange
+                gradient.addColorStop(2 / 6, `rgba(255, 255, 0, ${this.opacity})`); // Yellow
+                gradient.addColorStop(3 / 6, `rgba(0, 128, 0, ${this.opacity})`); // Green
+                gradient.addColorStop(4 / 6, `rgba(0, 0, 255, ${this.opacity})`); // Blue
+                gradient.addColorStop(5 / 6, `rgba(75, 0, 130, ${this.opacity})`); // Indigo
+                gradient.addColorStop(1, `rgba(238, 130, 238, ${this.opacity})`); // Violet
+                ctx.strokeStyle = gradient;
+                ctx.beginPath();
+                for (var i = 0; i < this.points.length; i++) {
+                    var point = this.points[i];
+                    if (i === 0) {
+                        ctx.moveTo(point.x, point.y);
+                    } else {
+                        ctx.lineTo(point.x, point.y);
+                    }
+                }
+                ctx.stroke();
+            },
+            _finalizeAndAddPath: function () {
+                if (this.points.length < 2) {
+                    return;
+                }
+                var pathData = this.convertPointsToSVGPath(this.points).join('');
+                if (pathData === 'M 0 0 Q 0 0 0 0 L 0 0') {
+                    this.canvas.renderAll();
+                    return;
+                }
+                var path = this.createPath(pathData);
+                path.set({
+                    stroke: new fabric.Gradient({
+                        type: 'linear',
+                        gradientUnits: 'percentage',
+                        coords: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 1,
+                            y2: 0
+                        },
+                        colorStops: [{
+                            offset: 0,
+                            color: `rgba(255, 0, 0, ${this.opacity})`
+                        },
+                        {
+                            offset: 1 / 6,
+                            color: `rgba(255, 165, 0, ${this.opacity})`
+                        },
+                        {
+                            offset: 2 / 6,
+                            color: `rgba(255, 255, 0, ${this.opacity})`
+                        },
+                        {
+                            offset: 3 / 6,
+                            color: `rgba(0, 128, 0, ${this.opacity})`
+                        },
+                        {
+                            offset: 4 / 6,
+                            color: `rgba(0, 0, 255, ${this.opacity})`
+                        },
+                        {
+                            offset: 5 / 6,
+                            color: `rgba(75, 0, 130, ${this.opacity})`
+                        },
+                        {
+                            offset: 1,
+                            color: `rgba(238, 130, 238, ${this.opacity})`
+                        }
+                        ]
+                    }),
+                    strokeWidth: this.width,
+                    fill: null
+                });
+                this.canvas.add(path);
+                this.canvas.renderAll();
+            },
+            _reset: function () {
+                this.canvas.clearContext(this.canvas.contextTop);
+            }
+        });
+
+        var rainbowBrush = new RainbowBrush(canvas);
+
+        document.getElementById('enableRainbowBrush').addEventListener('click', function () {
+            canvas.freeDrawingBrush = rainbowBrush;
+            canvas.isDrawingMode = true;
+            updateCursorStyle();
+        });
+
+        document.getElementById('brushSize').addEventListener('input', function () {
+            rainbowBrush.width = parseInt(this.value, 10);
+        });
+
+        document.getElementById('brushOpacity').addEventListener('input', function () {
+            rainbowBrush.opacity = parseFloat(this.value);
+        });
+        // Function to enable drawing mode with specified brush
+        function enableDrawingMode(brush) {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush = brush;
+        }
+        // Enable brush drawing mode
+        document.getElementById('enableBrush').addEventListener('click', function () {
+            enableDrawingMode(brush);
+        });
+        // Disable drawing mode
+        document.getElementById('disableBrush').addEventListener('click', function () {
+            canvas.isDrawingMode = false;
+        });
+        // Change brush color
+        document.getElementById('brushColor').addEventListener('input', function () {
+            brush.color = this.value;
+        });
+        // Change brush size
+        document.getElementById('brushSize').addEventListener('input', function () {
+            brush.width = parseInt(this.value, 10);
+        });
+        // Enable eraser mode
+        document.getElementById('enableEraser').addEventListener('click', function () {
+            enableEraserMode();
+        });
+
+        // Define the ErasedGroup class
+        const ErasedGroup = fabric.util.createClass(fabric.Group, {
+            original: null,
+            erasedPath: null,
+            initialize: function (original, erasedPath, options, isAlreadyGrouped) {
+                this.original = original;
+                this.erasedPath = erasedPath;
+                this.callSuper('initialize', [this.original, this.erasedPath], options, isAlreadyGrouped);
+            },
+            _calcBounds: function (onlyWidthHeight) {
+                const aX = [],
+                    aY = [],
+                    props = ['tr', 'br', 'bl', 'tl'],
+                    jLen = props.length,
+                    ignoreZoom = true;
+                let o = this.original;
+                o.setCoords(ignoreZoom);
+                for (let j = 0; j < jLen; j++) {
+                    let prop = props[j];
+                    aX.push(o.oCoords[prop].x);
+                    aY.push(o.oCoords[prop].y);
+                }
+                this._getBounds(aX, aY, onlyWidthHeight);
+            },
+        });
+
+        // Define the EraserBrush class
+        const EraserBrush = fabric.util.createClass(fabric.PencilBrush, {
+            _finalizeAndAddPath: function () {
+                var ctx = this.canvas.contextTop;
+                ctx.closePath();
+                if (this.decimate) {
+                    this._points = this.decimatePoints(this._points, this.decimate);
+                }
+                var pathData = this.convertPointsToSVGPath(this._points).join('');
+                if (pathData === 'M 0 0 Q 0 0 0 0 L 0 0') {
+                    this.canvas.requestRenderAll();
+                    return;
+                }
+                var path = this.createPath(pathData);
+                path.globalCompositeOperation = 'destination-out'; // Ensures that the path removes pixels
+                path.selectable = false;
+                path.evented = false;
+                path.absolutePositioned = true;
+
+                // Objects that intersect with the eraser path
+                const objects = this.canvas.getObjects().filter((obj) => obj.intersectsWithObject(path));
+
+                if (objects.length > 0) {
+                    const mergedGroup = new fabric.Group(objects);
+                    const newPath = new ErasedGroup(mergedGroup, path);
+                    const left = newPath.left;
+                    const top = newPath.top;
+                    const newData = newPath.toDataURL({
+                        withoutTransform: true
+                    });
+
+                    // Convert the erased group into an image and replace the original objects
+                    fabric.Image.fromURL(newData, (fabricImage) => {
+                        fabricImage.set({
+                            left: left,
+                            top: top,
+                        });
+                        this.canvas.remove(...objects); // Remove the original objects
+                        this.canvas.add(fabricImage); // Add the new "erased" image
+                    });
+                }
+
+                this.canvas.clearContext(this.canvas.contextTop);
+                this.canvas.renderAll();
+                this._resetShadow();
+            }
+        });
+
+        // Function to enable eraser mode
+        function enableEraserMode() {
+            console.log('Eraser mode enabled');
+            const eraserBrush = new EraserBrush(canvas);
+            eraserBrush.width = 10; // You can adjust this value
+            canvas.freeDrawingBrush = eraserBrush;
+            canvas.isDrawingMode = true;
+        }
+
+
+        // Store the filter functions without range-dependent filters
+        var filterFunctions = {
+            'grayscale': fabric.Image.filters.Grayscale,
+            'invert': fabric.Image.filters.Invert,
+            'remove-color': fabric.Image.filters.RemoveColor,
+            'sepia': fabric.Image.filters.Sepia,
+            'brownie': fabric.Image.filters.Brownie,
+            'vintage': fabric.Image.filters.Vintage,
+            'technicolor': fabric.Image.filters.Technicolor,
+            'polaroid': fabric.Image.filters.Polaroid,
+            'kodachrome': fabric.Image.filters.Kodachrome,
+            'blackwhite': fabric.Image.filters.BlackWhite,
+            'blend-image': fabric.Image.filters.BlendImage
+        };
+
+        // Disable inputs when no selection is made
+        canvas.on({
+            'selection:created': function () {
+                document.getElementById('filter-select').disabled = false; // Enable when an image is selected
+            },
+            'selection:cleared': function () {
+                document.getElementById('filter-select').disabled = true; // Disable when selection is cleared
+            }
+        });
+
+        // Create a Fabric canvas with the context that has the willReadFrequently attribute
+        var context = canvas.getContext('2d', {
+            willReadFrequently: true
+        });
+        // Initialize the Canvas 2D backend
+        fabric.filterBackend = new fabric.Canvas2dFilterBackend();
+
+        function applySelectedFilter(filterName) {
+            var activeImgObj = canvas.getActiveObject();
+
+            if (!activeImgObj || activeImgObj.type !== 'image') {
+                console.warn('No active image object selected or it is not an image.');
+                return;
+            }
+
+            console.log(`Applying filter to image of size: ${activeImgObj.width} x ${activeImgObj.height}`);
+
+            // Clear existing filters
+            activeImgObj.filters = [];
+
+            // Special handling for 'blend-color' filter
+            if (filterName === 'blend-color') {
+                var blendColorFilter = new fabric.Image.filters.BlendColor({
+                    color: '#FF0000', // Replace with the color you want to blend
+                    mode: ' ', // Choose a blend mode like 'multiply', 'overlay', etc.
+                    alpha: 0.5 // Adjust the alpha (transparency)
+                });
+                activeImgObj.filters.push(blendColorFilter);
+                activeImgObj.applyFilters();
+                canvas.renderAll();
+            }
+            // For other filters
+            else if (filterName && filterFunctions[filterName]) {
+                try {
+                    activeImgObj.filters.push(new filterFunctions[filterName]());
+                    activeImgObj.applyFilters();
+                    canvas.renderAll();
+                } catch (error) {
+                    console.error('Error applying filter:', error);
+                }
+            } else {
+                console.warn('Unknown filter:', filterName);
+            }
+        }
+
+        // Event listener for filter selection
+        document.getElementById('filter-select').addEventListener('change', function (event) {
+            applySelectedFilter(event.target.value);
+        });
+
+        // Function to get the selected image object
+        function getSelectedImage() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'image') {
+                return activeObject;
+            }
+            return null;
+        }
+
+        // Function to apply filter and render the canvas
+        function applyFilter(index, filter) {
+            const img = getSelectedImage();
+            if (img) {
+                img.filters[index] = filter;
+                img.applyFilters();
+                canvas.renderAll();
+            }
+        }
+
+        // Event listeners for filters
+        document.getElementById('opacityRange').addEventListener('input', function () {
+            const img = getSelectedImage();
+            if (img) {
+                img.set('opacity', parseFloat(this.value));
+                canvas.renderAll();
+            }
+        });
+
+        document.getElementById('brightness').addEventListener('input', function () {
+            applyFilter(0, new fabric.Image.filters.Brightness({
+                brightness: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('contrast').addEventListener('input', function () {
+            applyFilter(1, new fabric.Image.filters.Contrast({
+                contrast: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('saturation').addEventListener('input', function () {
+            applyFilter(2, new fabric.Image.filters.Saturation({
+                saturation: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('hue').addEventListener('input', function () {
+            applyFilter(3, new fabric.Image.filters.HueRotation({
+                rotation: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('vibrance').addEventListener('input', function () {
+            applyFilter(4, new fabric.Image.filters.Vibrance({
+                vibrance: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('noise').addEventListener('input', function () {
+            applyFilter(5, new fabric.Image.filters.Noise({
+                noise: parseInt(this.value, 10)
+            }));
+        });
+
+        document.getElementById('pixelate').addEventListener('input', function () {
+            applyFilter(6, new fabric.Image.filters.Pixelate({
+                blocksize: parseInt(this.value, 10)
+            }));
+        });
+
+        document.getElementById('blur').addEventListener('input', function () {
+            applyFilter(7, new fabric.Image.filters.Blur({
+                blur: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('sharpen').addEventListener('input', function () {
+            applyFilter(8, new fabric.Image.filters.Sharpen());
+        });
+
+        document.getElementById('emboss').addEventListener('input', function () {
+            applyFilter(9, new fabric.Image.filters.Emboss({
+                emboss: parseFloat(this.value)
+            }));
+        });
+
+        document.getElementById('gammaRed').addEventListener('input', function () {
+            applyFilter(10, new fabric.Image.filters.Gamma({
+                gamma: [parseFloat(this.value), 1, 1]
+            }));
+        });
+
+        document.getElementById('gammaGreen').addEventListener('input', function () {
+            applyFilter(11, new fabric.Image.filters.Gamma({
+                gamma: [1, parseFloat(this.value), 1]
+            }));
+        });
+
+        document.getElementById('gammaBlue').addEventListener('input', function () {
+            applyFilter(12, new fabric.Image.filters.Gamma({
+                gamma: [1, 1, parseFloat(this.value)]
+            }));
+        });
+
+
+
+        // Adding event listener for the swap black and white colors button
+        document.getElementById('invertColor').addEventListener('click', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'image') {
+                // Access image's original element and get the context for pixel manipulation
+                var imgElement = activeObject._element;
+                var canvasEl = document.createElement('canvas');
+                canvasEl.width = imgElement.width;
+                canvasEl.height = imgElement.height;
+
+                var ctx = canvasEl.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0);
+
+                // Get the pixel data of the image
+                var imageData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
+                var data = imageData.data;
+
+                // Loop through all pixels (RGBA values)
+                for (var i = 0; i < data.length; i += 4) {
+                    var r = data[i]; // Red channel
+                    var g = data[i + 1]; // Green channel
+                    var b = data[i + 2]; // Blue channel
+
+                    // Check if the pixel is black (r, g, b all close to 0) and change it to white
+                    if (r < 10 && g < 10 && b < 10) {
+                        data[i] = 255; // Set red to white
+                        data[i + 1] = 255; // Set green to white
+                        data[i + 2] = 255; // Set blue to white
+                    }
+                    // Check if the pixel is white (r, g, b all close to 255) and change it to black
+                    else if (r > 245 && g > 245 && b > 245) {
+                        data[i] = 0; // Set red to black
+                        data[i + 1] = 0; // Set green to black
+                        data[i + 2] = 0; // Set blue to black
+                    }
+                }
+
+                // Put the modified pixel data back into the canvas
+                ctx.putImageData(imageData, 0, 0);
+
+                // Update the fabric image with the new swapped color image
+                var newImageSrc = canvasEl.toDataURL();
+                fabric.Image.fromURL(newImageSrc, function (oImg) {
+                    // Keep the same position and scaling as the original image
+                    oImg.set({
+                        left: activeObject.left,
+                        top: activeObject.top,
+                        scaleX: activeObject.scaleX,
+                        scaleY: activeObject.scaleY,
+                        angle: activeObject.angle
+                    });
+
+                    canvas.remove(activeObject); // Remove the old image
+                    canvas.add(oImg); // Add the new image
+                    canvas.renderAll();
+                });
+            }
+        });
+
+        // Adding event listener for the invert button
+        document.getElementById('invertButton').addEventListener('click', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                // Flip the object horizontally (mirror effect)
+                activeObject.set('flipX', !activeObject.flipX);
+                canvas.renderAll();
+            }
+        });
+
+        // Toggle drawing mode and update cursor
+        document.getElementById('paintBrushButton').addEventListener('click', function () {
+            enableSprayMode();
+            updateCursorStyle();
+        });
+        // Update brush color
+        document.getElementById('brushColorPicker').addEventListener('input', function () {
+            canvas.freeDrawingBrush.color = this.value;
+        });
+        // Enable eraser mode by using a transparent color brush
+        function enableSprayMode() {
+            canvas.freeDrawingBrush = new fabric.SprayBrush(canvas);
+            canvas.freeDrawingBrush.width = 35;
+            canvas.isDrawingMode = true;
+        }
+
+        // Update brush color
+        document.getElementById('selectObj').addEventListener('click', function () {
+            enableSelectionMode();
+        });
+        // Enable eraser mode by using a transparent color brush
+        function enableSelectionMode() {
+            canvas.isDrawingMode = false;
+        }
+
+        // Zoom in/out on mouse wheel scroll (Ctrl + Scroll)
+        canvas.on('mouse:wheel', function (options) {
+            var delta = options.e.deltaY;
+            var zoomRatio = 1.1; // Zoom ratio
+            var pointer = canvas.getPointer(options.e);
+
+            if (options.e.ctrlKey) {
+                if (delta > 0) {
+                    // Zoom out
+                    zoomRatio = 1 / zoomRatio;
+                }
+                var zoom = canvas.getZoom() * zoomRatio;
+                canvas.zoomToPoint({
+                    x: options.e.offsetX,
+                    y: options.e.offsetY
+                }, zoom);
+                options.e.preventDefault();
+                options.e.stopPropagation();
+            }
+        });
+
+        var backgroundImg = null; // To hold the background image
+        var activeImgObj = null;
+        // Set the background color of the canvas
+        canvas.setBackgroundColor('#d6d6d6a8', canvas.renderAll.bind(canvas));
+
+        // drawing
+        var isDrawing = false; // To track drawing state
+        // Update cursor style based on drawing mode
+        function updateCursorStyle() {
+            if (isDrawing) {
+                canvas.defaultCursor = 'url("https://cdn-icons-png.flaticon.com/512/214/214275.png")';
+            } else {
+                canvas.defaultCursor = 'default';
+            }
+        }
+
+
+        document.getElementById('addFontFamily').addEventListener('change', function () {
+            var selectedFont = this.value;
+            var selectedOption = this.options[this.selectedIndex];
+            var fontUrl = selectedOption.getAttribute('data-font-url');
+            var activeObject = canvas.getActiveObject();
+
+            // Log the selected font and its URL
+            console.log('Selected Font Family:', selectedFont);
+            console.log('Font URL:', fontUrl);
+
+            if (activeObject && activeObject.type === 'i-text') {
+                if (selectedFont) {
+                    // Create a new <style> element to define @font-face
+                    var style = document.createElement('style');
+                    style.type = 'text/css';
+
+                    var fontFace = `
+        @font-face {
+            font-family: '${selectedFont}';
+            src: url('${fontUrl}') format('${fontUrl.endsWith(".ttf") ? 'truetype' : 'opentype'}');
+            font-weight: normal;
+            font-style: normal;
+        }
+    `;
+                    style.appendChild(document.createTextNode(fontFace));
+                    document.head.appendChild(style);
+
+                    // Use WebFont to check if the font loads correctly
+                    WebFont.load({
+                        custom: {
+                            families: [selectedFont],
+                            urls: [fontUrl]
+                        },
+                        active: function () {
+                            console.log('Font loaded successfully:', selectedFont);
+                            // Apply the font to the canvas object
+                            activeObject.set('fontFamily', selectedFont);
+                            canvas.renderAll();
+                        },
+                        inactive: function () {
+                            console.error('Failed to load font:', selectedFont);
+                        }
+                    });
+                }
+            }
+        });
+
+
+        document.getElementById('textShadowColor').addEventListener('input', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                if (!activeObject.shadow) {
+                    activeObject.setShadow({
+                        color: this.value,
+                        blur: 10,
+                        offsetX: 5,
+                        offsetY: 5
+                    });
+                } else {
+                    activeObject.shadow.color = this.value;
+                }
+                canvas.renderAll();
+            }
+        });
+        // Change text shadow offset X in real-time
+        document.getElementById('textShadowOffsetX').addEventListener('input', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                if (!activeObject.shadow) {
+                    activeObject.setShadow({
+                        color: '#000000',
+                        blur: 10,
+                        offsetX: parseInt(this.value, 10),
+                        offsetY: 0
+                    });
+                } else {
+                    activeObject.shadow.offsetX = parseInt(this.value, 10);
+                }
+                canvas.renderAll();
+            }
+        });
+
+        // Change text shadow offset Y in real-time
+        document.getElementById('textShadowOffsetY').addEventListener('input', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                if (!activeObject.shadow) {
+                    activeObject.setShadow({
+                        color: '#000000',
+                        blur: 10,
+                        offsetX: 0,
+                        offsetY: parseInt(this.value, 10)
+                    });
+                } else {
+                    activeObject.shadow.offsetY = parseInt(this.value, 10);
+                }
+                canvas.renderAll();
+            }
+        });
+
+        // Change text shadow blur in real-time
+        document.getElementById('textShadowBlur').addEventListener('input', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                if (!activeObject.shadow) {
+                    activeObject.setShadow({
+                        color: '#000000',
+                        blur: parseInt(this.value, 10),
+                        offsetX: 0,
+                        offsetY: 0
+                    });
+                } else {
+                    activeObject.shadow.blur = parseInt(this.value, 10);
+                }
+                canvas.renderAll();
+            }
+        });
+
+        // Change font size in real-time
+        document.getElementById('fontSize').addEventListener('input', function () {
+            var fontSize = this.value;
+            var activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'i-text') {
+                activeObject.set('fontSize', parseInt(fontSize, 10));
+                canvas.renderAll();
+            }
+        });
+
+        // Function to resize image
+        function resizeImage(image, maxWidth, maxHeight) {
+            var width = image.width;
+            var height = image.height;
+
+            if (width > maxWidth) {
+                height = Math.round((maxWidth / width) * height);
+                width = maxWidth;
+            }
+
+            if (height > maxHeight) {
+                width = Math.round((maxHeight / height) * width);
+                height = maxHeight;
+            }
+
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, width, height);
+
+            return canvas.toDataURL();
+        }
+        // Handle background image upload
+        // document.querySelector('.choose-bg').addEventListener('click', function () {
+        //     document.querySelector('.back-file-input').click();
+        // });
+        // document.querySelector('.back-file-input').addEventListener('change', function (e) {
+        //     var file = e.target.files[0];
+        //     var reader = new FileReader();
+        //     reader.onload = function (event) {
+        //         var imgObj = new Image();
+        //         imgObj.src = event.target.result;
+        //         imgObj.onload = function () {
+        //             var resizedImageDataUrl = resizeImage(imgObj, 1920, 1080); // Resize to max 1920x1080
+        //             fabric.Image.fromURL(resizedImageDataUrl, function (img) {
+        //                 img.scaleToWidth(canvas.width);
+        //                 img.scaleToHeight(canvas.height);
+        //                 canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+        //                 img.set({
+        //                     selectable: false,
+        //                     hasControls: true
+        //                 });
+        //                 canvas.setActiveObject(img);
+        //                 backgroundImg = img;
+        //                 canvas.renderAll();
+        //                 updateLayerBoxes();
+        //             });
+        //         };
+        //     };
+        //     reader.readAsDataURL(file);
+        // });
+
+
+
+
+        canvas.on('object:added', function (e) {
+            if (backgroundImg) {
+                backgroundImg.moveTo(0); // Move the background image to the bottom of the stack
+                canvas.sendToBack(backgroundImg); // Ensure it's at the back
+            }
+        });
+
+        // Handle main image upload
+        document.querySelector('.choose-img').addEventListener('click', function () {
+            document.querySelector('.file-input').click();
+        });
+
+        // Resize the image before processing to avoid memory overload
+        document.querySelector('.file-input').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var imgObj = new Image();
+                imgObj.src = event.target.result;
+                imgObj.onload = function () {
+                    // Create a canvas to resize the image
+                    var tempCanvas = document.createElement('canvas');
+                    var ctx = tempCanvas.getContext('2d');
+
+                    // Resize if the image exceeds 1000px in width or height
+                    var maxSize = 1000;
+                    var width = imgObj.width;
+                    var height = imgObj.height;
+
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = (maxSize / width) * height;
+                            width = maxSize;
+                        } else {
+                            width = (maxSize / height) * width;
+                            height = maxSize;
+                        }
+                    }
+
+                    // Set new dimensions to the temporary canvas
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+
+                    // Draw the resized image
+                    ctx.drawImage(imgObj, 0, 0, width, height);
+
+                    // Create a fabric.js image from the resized canvas
+                    fabric.Image.fromURL(tempCanvas.toDataURL(), function (img) {
+                        canvas.add(img);
+                        img.center();
+                        img.setCoords();
+                        canvas.setActiveObject(img);
+                        activeImgObj = img;
+                        canvas.renderAll();
+                        updateLayerBoxes();
+                    });
+                };
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        fabric.enableRetinaScaling = true;
+        // fabric.enableGLFiltering = true;
+
+        function getColorMatrix(hex) {
+            var rgb = hexToRgb(hex);
+            if (!rgb) {
+                return null;
+            }
+            var r = rgb.r / 255;
+            var g = rgb.g / 255;
+            var b = rgb.b / 255;
+
+            return [
+                r, 0, 0, 0, 0,
+                0, g, 0, 0, 0,
+                0, 0, b, 0, 0,
+                0, 0, 0, 1, 0
+            ];
+        }
+
+        function hexToRgb(hex) {
+            hex = hex.replace(/^#/, '');
+            if (hex.length !== 6) {
+                return null;
+            }
+            var bigint = parseInt(hex, 16);
+            var r = (bigint >> 16) & 255;
+            var g = (bigint >> 8) & 255;
+            var b = bigint & 255;
+
+            return {
+                r: r,
+                g: g,
+                b: b
+            };
+        }
+
+        // Set default brightness and contrast filter to image
+        function addFiltersToImage(image) {
+            image.filters.push(new fabric.Image.filters.Brightness({
+                brightness: 0
+            }));
+            image.filters.push(new fabric.Image.filters.Contrast({
+                contrast: 0
+            }));
+            image.applyFilters();
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            canvas.clear();
+            canvas.setBackgroundColor('#d6d6d6a8', canvas.renderAll.bind(canvas)); // Reset background color
+        }
+
+        // save image
+        var saveButton = document.querySelector('.save-img');
+        var increment = 1;
+
+        saveButton.addEventListener('click', function () {
+            var imgWidth = parseInt(document.getElementById('imgWidth').value);
+            var imgHeight = parseInt(document.getElementById('imgHeight').value);
+            var uEmail = document.getElementById('user-email').value;
+            var chooseBg = document.getElementById('chooseBg').value;
+            saveCanvasAsImage(imgWidth, imgHeight, uEmail, chooseBg);
+            console.log(imgWidth, imgHeight, uEmail, chooseBg);
+
+        });
+
+        function saveCanvasAsImage(width, height, uEmail, chooseBg) {
+            // Temporarily set canvas background color to null (so it's transparent)
+            var originalBgColor = canvas.backgroundColor;
+            canvas.backgroundColor = null; // This removes the background color
+            // Create a temporary canvas for resizing the image
+            var tempCanvas = document.createElement('canvas');
+            var tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+
+            // Draw the resized canvas content to the temporary canvas
+            var dataUrl = canvas.toDataURL({
+                format: 'png',
+                multiplier: width / canvas.getWidth(), // Scale the image to the new size
+                enableRetinaScaling: true
+            });
+            // Restore the original background color
+            canvas.backgroundColor = originalBgColor;
+            // Create a download link and save the image
+            var link = document.createElement('a');
+            link.href = dataUrl;
+            var filename = 'edited-image-' + increment + '.png';
+            link.download = filename;
+            link.click();
+            sendImageToServer(dataUrl, uEmail, chooseBg, width, height)
+            increment++;
+        }
+        function sendImageToServer(imageData, email, chooseBg, width, height) {
+
+            $.ajax({
+                url: '/save-sticker', // Use the route URL passed from the Blade template
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Fetch CSRF token
+                },
+                data: {
+                    image: imageData,
+                    email: email,
+                    width: width,
+                    height: height,
+                    bgType: chooseBg,
+                },
+                success: function (response) {
+                    console.log('Image saved successfully:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving image:', error);
+                }
+            });
+        }
+
+
+        // Rotate the active object left
+        document.getElementById('left').addEventListener('click', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                activeObject.rotate(activeObject.angle - 15);
+                canvas.renderAll();
+            }
+        });
+
+        // Rotate the active object right
+        document.getElementById('right').addEventListener('click', function () {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                activeObject.rotate(activeObject.angle + 15);
+                canvas.renderAll();
+            }
+        });
+
+        // Event listener for deleting the selected object using the delete key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Delete') {
+                var activeObject = canvas.getActiveObject();
+                if (activeObject) {
+                    canvas.remove(activeObject);
+                    canvas.renderAll();
+                    updateLayerBoxes();
+                }
+            }
+        });
+        // Add event listener to the button
+        document.getElementById('undoButton').addEventListener('click', function () {
+            undo();
+        });
+        // Event listener for deleting the selected object using the delete key
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'z') {
+                undo();
+            }
+        });
+        // Save state whenever an object is added, modified, or removed
+        canvas.on('object:added', saveCanvasState);
+        canvas.on('object:modified', saveCanvasState);
+        canvas.on('object:removed', saveCanvasState);
+        // Add event listener to the canvas
+        var canvasStates = [];
+        var currentStateIndex = -1;
+        // Function to save the current canvas state
+        function saveCanvasState() {
+            var json = JSON.stringify(canvas);
+            canvasStates.push(json);
+            currentStateIndex++;
+        }
+        // Function to undo the last action
+        function undo() {
+            if (currentStateIndex > 0) {
+                currentStateIndex--;
+                var json = canvasStates[currentStateIndex];
+                canvas.loadFromJSON(json, function () {
+                    canvas.renderAll();
+                });
+            }
+        }
+        saveState();
+
+
+        // Function to update the layer boxes when a new object is added
+        var layers = [];
+        // // Function to update the layer boxes
+        function updateLayerBoxes() {
+            var layerSelect = document.getElementById('layerSelect');
+            layerSelect.innerHTML = ''; // Reset layer boxes
+
+            // Add a box for each object in the canvas
+            canvas.getObjects().forEach((obj, index) => {
+                var layerBox = document.createElement('div');
+                layerBox.classList.add('layer-box');
+                layerBox.setAttribute('data-index', index);
+
+                // For text objects, create a mini canvas to preview the text
+                // For text objects, create a mini canvas to preview the text
+                if (obj.type === 'text') {
+                    var miniCanvas = document.createElement('canvas');
+                    miniCanvas.width = 100;
+                    miniCanvas.height = 100;
+                    var miniCtx = miniCanvas.getContext('2d');
+
+                    // Get the bounding rect to calculate the actual width and height
+                    var boundingRect = obj.getBoundingRect();
+                    var scaleFactor = Math.min(90 / boundingRect.width, 90 / boundingRect.height);
+
+                    // Set the font and scale it appropriately
+                    miniCtx.font = `${Math.floor(obj.fontSize * scaleFactor)}px ${obj.fontFamily}`;
+                    miniCtx.fillStyle = obj.fill;
+                    miniCtx.textAlign = 'center';
+                    miniCtx.textBaseline = 'middle';
+
+                    // Add text to the mini canvas
+                    miniCtx.fillText(obj.text, miniCanvas.width / 2, miniCanvas.height / 2);
+
+                    // Append mini canvas to the layer box
+                    layerBox.appendChild(miniCanvas);
+                }
+
+                // Add preview for image objects
+                if (obj.type === 'image') {
+                    var imgDataURL = obj.toDataURL();
+                    layerBox.innerHTML = `<img src="${imgDataURL}" alt="Layer ${index + 1}">`;
+                }
+
+                // Highlight selected layer
+                if (canvas.getActiveObject() === obj) {
+                    layerBox.classList.add('selected-layer');
+                }
+
+                // Event listener to select the layer on click
+                layerBox.addEventListener('click', function () {
+                    var layerIndex = this.getAttribute('data-index');
+                    selectLayer(layerIndex);
+                });
+
+                // Append layer box to the container
+                layerSelect.appendChild(layerBox);
+            });
+        }
+        // Function to select and activate a layer
+        function selectLayer(layerIndex) {
+            if (layerIndex !== "") {
+                canvas.discardActiveObject();
+                var objectToSelect = canvas.getObjects()[layerIndex];
+                canvas.setActiveObject(objectToSelect);
+                objectToSelect.set({
+                    selectable: true,
+                    evented: true
+                });
+                canvas.renderAll();
+                updateLayerBoxes();
+                toggleLayerButtons(true); // Enable the move buttons when a layer is selected
+            } else {
+                canvas.discardActiveObject();
+                canvas.getObjects().forEach(obj => {
+                    obj.set({
+                        selectable: false,
+                        evented: false
+                    });
+                });
+                canvas.renderAll();
+                updateLayerBoxes();
+                toggleLayerButtons(false); // Disable the move buttons when no layer is selected
+            }
+        }
+
+        // Function to move the selected layer up
+        function moveLayerUp() {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                var idx = canvas.getObjects().indexOf(activeObject);
+                if (idx < canvas.getObjects().length - 1) {
+                    canvas.moveTo(activeObject, idx + 1); // Move the object up in the stack
+                    updateLayerBoxes();
+                }
+            }
+        }
+
+        // Function to move the selected layer down
+        function moveLayerDown() {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                var idx = canvas.getObjects().indexOf(activeObject);
+                if (idx > 0) {
+                    canvas.moveTo(activeObject, idx - 1); // Move the object down in the stack
+                    updateLayerBoxes();
+                }
+            }
+        }
+
+        // Function to enable/disable layer movement buttons
+        function toggleLayerButtons(enable) {
+            document.getElementById('moveUp').disabled = !enable;
+            document.getElementById('moveDown').disabled = !enable;
+        }
+
+        // Event listeners for the Move Up and Move Down buttons
+        document.getElementById('moveUp').addEventListener('click', moveLayerUp);
+        document.getElementById('moveDown').addEventListener('click', moveLayerDown);
+
+        // Initially disable the move buttons
+        toggleLayerButtons(false);
+
+        // Initially disable editing of all objects
+        canvas.getObjects().forEach(obj => {
+            obj.set({
+                selectable: false,
+                evented: false
+            });
+        });
+
+        // Update layer boxes initially
+        updateLayerBoxes();
+    </script>
+
+    <script>
+        document.addEventListener('keydown', (event) => {
+            // Block Ctrl+U, Ctrl+Shift+I, F12, Ctrl+S
+            if (
+                event.ctrlKey &&
+                ['u', 's', 'Shift', 'I'].includes(event.key.toLowerCase()) ||
+                event.key === 'F12'
+            ) {
+                event.preventDefault();
+            }
+        });
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+    </script>
+</body>
+
+</html>
